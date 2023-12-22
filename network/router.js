@@ -1,14 +1,18 @@
 const router = require('express').Router();
-
+const controller = require('../components/tracks/controller.js');
 
 router.use((req, res, next)=>{
-    res.contentType('application/json');
     next();
 })
 
 router.get('/tracks/:id', (req, res)=> {
-  console.log('tracks');
-  res.end('tracks');  
+
+    res.setHeader('Content-Type', 'audio/mp3');
+    console.log('Init route');
+    controller.getTrack(req.params.id)
+        .then((path) =>{
+            controller.musicLoader(path, res);
+        })
 })
 
 router.get('/playLists/:id', (req, res)=> {

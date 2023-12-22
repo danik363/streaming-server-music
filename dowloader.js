@@ -1,32 +1,53 @@
 const { exec } = require('child_process');
+const utils = require('util');
+const process = require('process');
+const path = require('path');
 
-function dowloader(){
-    exec('ls -a', (error, stadout, stderr) => {
-        if(!stadout.includes('music')){
-            console.log('¡Carpeta music no existe!');
-            exec('mkdir music', (error2, stdout2, stderr2) => {
-                if(error2){
-                    console.log(error2);
+
+
+const execAsync = utils.promisify(exec);
+
+function dowloader (id){
+    return new Promise((resolve, reject) => {
+        execAsync('ls -a')
+            .then(({stdout, stderr}) => {
+                if(!stdout.includes('music')){
+                    console.log(stdout);
+                    console.log('¡Carpeta music no existe!');
+                    console.log('¡Creando carpeta!');
+                    return execAsync('mkdir music');
+                    
+                }else{
+                    console.log('¡La carpeta ya existe!');
+                    return Promise.resolve({stodut: 'Carpeta ya existente', stderr:''});
                 }
-                console.log('¡Carpeta music creada!');
-    
+            })
+            .then(({stdout, stderr}) => {
+                if(!stdout){
+                    console.log('¡Carpeta creada!');                   
+                }
+                return execAsync(`cd music && mkdir ${id}`);
+            })
+            .then(({stdout, stderr}) => {
                 console.log('¡Creando musica!');
-    
-                dowloadbyId();
-            });
-        }else{
-            console.log('¡Creando musica!');
-            dowloadbyId();
-        }
-    });
+                return downloadbyId(id);
+            })
+            .then(({stdout, stderr})=> {
+                console.log(stderr);
+                console.log('¡Musica creada!'); 
+                resolve(path.join(process.cwd(), 'music',id));
+            
+            })
+            .catch((error) => {
+                reject('Ha a ocurrido un error al momento de ejecutar los comandos' + error);
+            })    
+    })
 }
-function dowloadbyId({id, options}){
-    exec('cd music && spotifydl https://open.spotify.com/track/4rzfv0JLZfVhOhbSQ8o5jZ', (error, stadout, stderr) => {
-            if(error){
-                console.log(error);
-            }else{
-                console.log('¡Musica creada!');
-            }
-        });
+
     
+function downloadbyId(id){
+    return execAsync(`cd ./music/${id} && spotifydl --oo https://open.spotify.com/track/${id}`);
 }
+
+
+module.exports = {dowloader};
