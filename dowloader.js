@@ -19,11 +19,12 @@ function dowloader (id){
                     
                 }else{
                     console.log('¡La carpeta ya existe!');
-                    return Promise.resolve({stodut: 'Carpeta ya existente', stderr:''});
+                    return Promise.resolve({stdout: 'Carpeta ya existente', stderr:''});
                 }
             })
             .then(({stdout, stderr}) => {
                 if(!stdout){
+                    console.log(stdout);
                     console.log('¡Carpeta creada!');                   
                 }
                 return execAsync(`cd music && mkdir ${id}`);
