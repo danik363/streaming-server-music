@@ -1,16 +1,15 @@
 const { dowloader } = require("../../dowloader.js");
 const utils = require("../../utils.js");
 const fs = require("fs");
-const stream = require("stream");
 const path = require("path");
-const { throws } = require("assert");
 
 async function getTrack(id) {
   try {
     let filePath = await isExist(id);
     if (!filePath) {
-      filePath = filePath = await dowloader(id);
+      filePath = await dowloader(id);
     }
+    console.log(filePath)
     return filePath;
   } catch (e) {
     console.log(e);
@@ -53,7 +52,6 @@ async function musicLoader(dirPath, req, res) {
     console.log(files);
     console.log("hola");
     console.log(fileName);
-    console.log(req.headers.range);
     const filePath = path.join(dirPath, fileName);
     const audioStream = fs.createReadStream(filePath);
     console.log('pase los filepath');

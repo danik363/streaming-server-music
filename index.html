@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet" />
+    <title>Reproductor de Audio</title>
+  </head>
+  <style>
+    /*********** Baseline, reset styles ***********/
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      width: 25rem;
+    }
+
+    /* Removes default focus */
+    input[type="range"]:focus {
+      outline: none;
+    }
+
+    /******** Chrome, Safari, Opera, and Edge Chromium styles ********/
+    /* slider track */
+    input[type="range"]::-webkit-slider-runnable-track {
+      background-color: #c9c9c9;
+      border-radius: 0.5rem;
+      height: 0.5rem;
+    }
+
+    /* slider thumb */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; /* Override default look */
+      appearance: none;
+      margin-top: -4px; /* Centers thumb on the track */
+      background-color: #f5f5f5;
+      border-radius: 0.5rem;
+      height: 1rem;
+      width: 1rem;
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+      outline: 3px solid #f5f5f5;
+      outline-offset: 0.125rem;
+    }
+
+    /*********** Firefox styles ***********/
+    /* slider track */
+    input[type="range"]::-moz-range-track {
+      background-color: #c9c9c9;
+      border-radius: 0.5rem;
+      height: 0.5rem;
+    }
+
+    /* slider thumb */
+    input[type="range"]::-moz-range-thumb {
+      background-color: #f5f5f5;
+      border: none; /*Removes extra border that FF applies*/
+      border-radius: 0.5rem;
+      height: 1rem;
+      width: 1rem;
+    }
+
+    input[type="range"]:focus::-moz-range-thumb {
+      outline: 3px solid #f5f5f5;
+      outline-offset: 0.125rem;
+    }
+  </style>
+  <body>
+    <button id="btnPlay">Play</button>
+    <button id="btnPause">Pause</button>
+    <input
+      class="progressBar"
+      id="progressBar"
+      type="range"
+      step="1"
+      min="0"
+      max="100"
+      value="0"
+    />
+    <span id="currentTime">0:00</span>
+    <span id="duration">0:00</span>
+    <script>
+      const btnPlay = document.getElementById("btnPlay");
+      const btnPause = document.getElementById("btnPause");
+      const progressBar = document.getElementById("progressBar");
+      const currentTimeSpan = document.getElementById("currentTime");
+      const durationSpan = document.getElementById("duration");
+      const audio = new Audio();
+      let isPlaying = false;
+      let intervalId;
+
+      btnPlay.addEventListener("click", () => {
+        playTrack();
+      });
+
+      btnPause.addEventListener("click", () => {
+        pauseTrack();
+      });
+
+      progressBar.addEventListener("input", () => {
+        const newPosition = (progressBar.value / 100) * audio.duration;
+        audio.currentTime = newPosition;
+        updateProgressBar();
+      });
+
+      audio.addEventListener("loadedmetadata", () => {
+        durationSpan.textContent = formatTime(audio.duration);
+      });
+
+      audio.addEventListener("ended", () => {
+        clearInterval(intervalId);
+        isPlaying = false;
+      });
+
+      function updateProgressBar() {
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeSpan.textContent = formatTime(audio.currentTime);
+      }
+
+      function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+      }
+
+      function playTrack() {
+        if (!audio.src) {
+          fetch("http://localhost:8999/tracks/3YyBS5JqDDkhmFbLRsIRsF", {
+            method: "GET",
+            headers: {
+              Accept: "audio/mpeg",
+            },
+          })
+            .then((response) => response.blob())
+            .then((blob) => {
+              
+              audio.src = URL.createObjectURL(blob);
+              console.log(audio.src);
+              audio.play();
+              intervalId = setInterval(updateProgressBar, 1000);
+            })
+            .catch((error) => console.log(error));
+
+          isPlaying = true;
+        } else {
+          console.log("play");
+          isPlaying = true;
+          audio.play();
+        }
+      }
+
+      function pauseTrack() {
+        if (isPlaying) {
+          console.log("pause");
+          audio.pause();
+          clearInterval(intervalId);
+          isPlaying = false;
+        }
+      }
+    </script>
+  </body>
+</html>
