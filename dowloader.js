@@ -2,7 +2,7 @@ const { exec } = require('child_process');
 const utils = require('util');
 const process = require('process');
 const path = require('path');
-
+const {isExist} = require('./utils.js');
 
 
 const execAsync = utils.promisify(exec);
@@ -31,6 +31,7 @@ function dowloader (id){
             })
             .then(({stdout, stderr}) => {
                 console.log('¡Creando musica!');
+                console.log(id)
                 return downloadbyId(id);
             })
             .then(({stdout, stderr})=> {
@@ -40,7 +41,16 @@ function dowloader (id){
             
             })
             .catch((error) => {
-                reject('Ha a ocurrido un error al momento de ejecutar los comandos' + error);
+                isExist(id).then((dirPath) => {
+                    if(dirPath){
+                        resolve(path.join(process.cwd(), 'music',id));
+                    }else{
+                        reject('Ha a ocurrido un error al momento de ejecutar los comandos' + error);
+                    }
+                }).catch((err) => {
+                    console.log(err)
+                })
+                
             })    
     })
 }

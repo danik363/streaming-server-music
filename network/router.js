@@ -12,7 +12,7 @@ router.get('/tracks/:id', (req, res)=> {
     console.log('Init route');
     controller.getTrack(req.params.id)
         .then((path) =>{
-            
+            console.log(path)
             controller.musicLoader(path, req, res);
         })
 })
